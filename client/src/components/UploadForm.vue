@@ -17,16 +17,24 @@
         >
         <label for="file"
                class="dragndrop__header"
+               :class="{'dragndrop__header--compact' : files.length >= 1}"
         >
             <strong>Drag files here</strong> or click to select file
         </label>
+
+        <uploads :files="files"/>
     </div>
 </template>
 
 <script>
 	import axios from 'axios'
+	import Uploads from "./Uploads";
 
 	export default {
+		components: {
+			Uploads
+		},
+
 		data() {
 			return {
 				files: [],
@@ -59,18 +67,18 @@
 
 				for (i = 0; i < files.length; i++) {
 					file = files[i]
-				}
 
-				this.storeMeta(file).then((fileObject) => {
-					this.upload(fileObject)
-				}).catch((fileObject) => {
-					fileObject.failed = true
-				})
+					this.storeMeta(file).then((fileObject) => {
+						this.upload(fileObject)
+					}).catch((fileObject) => {
+						fileObject.failed = true
+					})
+				}
 			},
 
 			upload(fileObject) {
 				var form = new FormData()
-                var vm = this
+				var vm = this
 
 				form.append('file', fileObject.file)
 				form.append('id', fileObject.id)
