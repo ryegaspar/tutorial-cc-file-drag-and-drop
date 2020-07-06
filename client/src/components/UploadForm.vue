@@ -24,7 +24,7 @@
 </template>
 
 <script>
-    import axios from 'axios'
+	import axios from 'axios'
 
 	export default {
 		data() {
@@ -62,44 +62,72 @@
 				}
 
 				this.storeMeta(file).then((fileObject) => {
-
+					this.upload(fileObject)
 				}).catch((fileObject) => {
 					fileObject.failed = true
 				})
 			},
 
-            storeMeta (file) {
+			upload(fileObject) {
+				var form = new FormData()
+                var vm = this
+
+				form.append('file', fileObject.file)
+				form.append('id', fileObject.id)
+
+				axios.post(`http://cc-multiple-file-drag.test/upload.php`, form, {
+					headers: {
+						'Content-Type': 'multipart/form-data'
+					},
+					cancelToken: new axios.CancelToken(function executor(c) {
+						fileObject.xhr = c;
+					}),
+					onUploadProgress: function (progressEvent) {
+						console.log(progressEvent.loaded)
+						vm.$emit('progress', fileObject, progressEvent)
+					}
+				}).then(function ({data}) {
+					console.log('finished')
+					vm.$emit('finished', fileObject)
+				}).catch(function (e) {
+					if (!fileObject.cancelled) {
+						vm.$emit('failed', fileObject)
+					}
+				});
+			},
+
+			storeMeta(file) {
 				var fileObject = this.generateFileObject(file)
 
 				return new Promise((resolve, reject) => {
 					axios.post(`http://cc-multiple-file-drag.test/store.php`, {
 						name: file.name
-                    }).then((response) => {
-                    	fileObject.id = response.data.data.id
-                        resolve(fileObject)
-                    }, () => {
-                    	reject(fileObject)
-                    })
-                })
-            },
+					}).then((response) => {
+						fileObject.id = response.data.data.id
+						resolve(fileObject)
+					}, () => {
+						reject(fileObject)
+					})
+				})
+			},
 
-            generateFileObject(file) {
+			generateFileObject(file) {
 				var fileObjectIndex = this.files.push({
-                    id: null,
-                    file: file,
-                    progress: 0,
-                    failed: false,
-                    loadedBytes: 0,
-                    totalBytes: 0,
-                    timeStarted: (new Date).getTime(),
-                    secondsRemaining: 0,
-                    finished: false,
-                    cancelled: false,
-                    xhr: null
-                }) - 1
+					id: null,
+					file: file,
+					progress: 0,
+					failed: false,
+					loadedBytes: 0,
+					totalBytes: 0,
+					timeStarted: (new Date).getTime(),
+					secondsRemaining: 0,
+					finished: false,
+					cancelled: false,
+					xhr: null
+				}) - 1
 
-                return this.files[fileObjectIndex];
-            }
+				return this.files[fileObjectIndex];
+			}
 		}
 	}
 </script>
