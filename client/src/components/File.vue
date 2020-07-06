@@ -2,9 +2,17 @@
     <div class="dragndrop__file">
         <div class="progress">
             <div class="progress__label">{{ file.file.name }} (x seconds remaining)</div>
-            <div class="progress__fill" style="width: 60%"></div>
+            <div class="progress__fill"
+                 :style="{ 'width': file.progress + '%'}"
+                 :class="{ 'progress__fill--finished': file.finished, 'progress__fill--failed': file.failed || file.cancelled }"
+            ></div>
             <div class="progress__percentage">
-                20%
+                <span v-if="file.failed">Failed</span>
+                <span v-if="file.finished">Complete</span>
+                <span v-if="file.cancelled">Cancelled</span>
+                <span v-if="!file.finished && !file.failed && !file.cancelled">
+                    {{ file.progress + '%' }}
+                </span>
             </div>
         </div>
     </div>
@@ -19,8 +27,41 @@
         data() {
     		return {
             }
+        },
+
+        mounted() {
+    		eventHub.$on('progress', (fileObject, e) => {
+    			this.updateFileObjectProgress(fileObject, e)
+            })
+
+            eventHub.$on('finished', (fileObject, e) => {
+            	if (fileObject.id === this.file.id) {
+            		this.file.finished = true
+                }
+            })
+
+			eventHub.$on('failed', (fileObject, e) => {
+				if (fileObject.id === this.file.id) {
+					this.file.failed = true
+				}
+			})
+		},
+
+        methods: {
+    		updateFileObjectProgress(fileObject, e) {
+    			if (!e.lengthComputable) {
+    				return
+                }
+
+    			fileObject.loadedBytes = e.loaded
+				fileObject.totalBytes = e.total
+
+                fileObject.progress = Math.ceil((e.loaded / e.total) * 100)
+
+                console.log(fileObject.progress)
+            }
         }
-    }
+	}
 </script>
 
 <style>

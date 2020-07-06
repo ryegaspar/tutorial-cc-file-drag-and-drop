@@ -28,7 +28,8 @@
 
 <script>
 	import axios from 'axios'
-	import Uploads from "./Uploads";
+	import Uploads from "./Uploads"
+	// import eventHub from "../events"
 
 	export default {
 		components: {
@@ -78,7 +79,6 @@
 
 			upload(fileObject) {
 				var form = new FormData()
-				var vm = this
 
 				form.append('file', fileObject.file)
 				form.append('id', fileObject.id)
@@ -91,15 +91,15 @@
 						fileObject.xhr = c;
 					}),
 					onUploadProgress: function (progressEvent) {
-						console.log(progressEvent.loaded)
-						vm.$emit('progress', fileObject, progressEvent)
+						// console.log(progressEvent.loaded)
+						eventHub.$emit('progress', fileObject, progressEvent)
 					}
 				}).then(function ({data}) {
-					console.log('finished')
-					vm.$emit('finished', fileObject)
+					// console.log('finished')
+					eventHub.$emit('finished', fileObject)
 				}).catch(function (e) {
 					if (!fileObject.cancelled) {
-						vm.$emit('failed', fileObject)
+						eventHub.$emit('failed', fileObject)
 					}
 				});
 			},

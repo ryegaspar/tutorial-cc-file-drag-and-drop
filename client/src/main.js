@@ -4,6 +4,8 @@ import axios from 'axios'
 
 Vue.config.productionTip = false
 
+window.eventHub = new Vue()
+
 new Vue({
   render: h => h(App),
 }).$mount('#app')
