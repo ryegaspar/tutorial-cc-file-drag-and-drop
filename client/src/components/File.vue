@@ -1,7 +1,12 @@
 <template>
     <div class="dragndrop__file">
         <div class="progress">
-            <div class="progress__label">{{ file.file.name }} ({{ file.secondsRemaining }} seconds remaining)</div>
+            <div class="progress__label">
+                {{ file.file.name }}
+                <span v-if="!file.failed && !file.finished && !file.cancelled">
+                    ({{ file.secondsRemaining }} seconds remaining)
+                </span>
+            </div>
             <div class="progress__fill"
                  :style="{ 'width': file.progress + '%'}"
                  :class="{ 'progress__fill--finished': file.finished, 'progress__fill--failed': file.failed || file.cancelled }"

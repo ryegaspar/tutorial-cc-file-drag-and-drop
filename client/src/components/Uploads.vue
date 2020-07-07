@@ -4,7 +4,7 @@
             <ul class="list-inline">
                 <li class="list-inline__item">Files: {{ files.length }}</li>
                 <li class="list-inline__item">Percentage: {{ overallProgress }}%</li>
-                <li class="list-inline__item list-inline__item--last">Time Remaining: 00:00</li>
+                <li class="list-inline__item list-inline__item--last">Time Remaining: {{ secondsRemaining }}</li>
             </ul>
         </div>
         <file v-for="file in files"
@@ -30,7 +30,8 @@
         data() {
 			return {
 			    overallProgress: 0,
-                interval: null
+                interval: null,
+                secondsRemaining: 0
             }
         },
 
@@ -42,6 +43,11 @@
             eventHub.$on('init', () => {
             	if (!this.interval) {
             		this.interval = setInterval(() => {
+            			if (this.unfinishedFiles().length === 0) {
+            				this.updateOverallProgress()
+                            clearInterval(this.interval)
+                            this.interval = null
+                        }
             			this.updateTimeRemaining()
                     }, 1000)
                 }
@@ -74,12 +80,16 @@
             },
 
             updateTimeRemaining() {
+				this.secondsRemaining = 0
+
 				this.unfinishedFiles().forEach((file) => {
 					file.secondsRemaining = timeremaining.calculate(
 						file.totalBytes,
                         file.loadedBytes,
                         file.timeStarted
                     )
+
+					this.secondsRemaining += file.secondsRemaining
 				})
             }
         }
