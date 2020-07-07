@@ -19,31 +19,37 @@
                     {{ file.progress + '%' }}
                 </span>
             </div>
+
+            <a href="#"
+               @click.prevent="cancel"
+               v-if="!file.finished && !file.cancelled"
+            >
+                Cancel
+            </a>
         </div>
     </div>
 </template>
 
 <script>
-    export default {
-    	props: [
-    		'file'
-        ],
+	export default {
+		props: [
+			'file'
+		],
 
-        data() {
-    		return {
-            }
-        },
+		data() {
+			return {}
+		},
 
-        mounted() {
-    		eventHub.$on('progress', (fileObject, e) => {
-    			this.updateFileObjectProgress(fileObject, e)
-            })
+		mounted() {
+			eventHub.$on('progress', (fileObject, e) => {
+				this.updateFileObjectProgress(fileObject, e)
+			})
 
-            eventHub.$on('finished', (fileObject, e) => {
-            	if (fileObject.id === this.file.id) {
-            		this.file.finished = true
-                }
-            })
+			eventHub.$on('finished', (fileObject, e) => {
+				if (fileObject.id === this.file.id) {
+					this.file.finished = true
+				}
+			})
 
 			eventHub.$on('failed', (fileObject, e) => {
 				if (fileObject.id === this.file.id) {
@@ -52,20 +58,26 @@
 			})
 		},
 
-        methods: {
-    		updateFileObjectProgress(fileObject, e) {
-    			if (!e.lengthComputable) {
-    				return
-                }
+		methods: {
+			updateFileObjectProgress(fileObject, e) {
+				if (!e.lengthComputable) {
+					return
+				}
 
-    			fileObject.loadedBytes = e.loaded
+				fileObject.loadedBytes = e.loaded
 				fileObject.totalBytes = e.total
 
-                fileObject.progress = Math.ceil((e.loaded / e.total) * 100)
+				fileObject.progress = Math.ceil((e.loaded / e.total) * 100)
 
-                // console.log(fileObject.progress)
+				// console.log(fileObject.progress)
+			},
+
+            cancel() {
+				this.file.xhr.abort()
+                // this.file.xhr.cancel()
+                this.file.cancelled = true
             }
-        }
+		}
 	}
 </script>
 
