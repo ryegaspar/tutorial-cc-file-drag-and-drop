@@ -4,7 +4,7 @@
             <ul class="list-inline">
                 <li class="list-inline__item">Files: {{ files.length }}</li>
                 <li class="list-inline__item">Percentage: {{ overallProgress }}%</li>
-                <li class="list-inline__item list-inline__item--last">Time Remaining: {{ secondsRemaining }}</li>
+                <li class="list-inline__item list-inline__item--last">Time Remaining: {{ timeRemaining }}</li>
             </ul>
         </div>
         <file v-for="file in files"
@@ -17,6 +17,7 @@
 <script>
 	import File from "./File"
 	import timeremaining from "../helpers/timeremaining"
+    import pad from "../helpers/pad"
 
 	export default {
 		props: [
@@ -31,7 +32,8 @@
 			return {
 			    overallProgress: 0,
                 interval: null,
-                secondsRemaining: 0
+                secondsRemaining: 0,
+                timeRemaining: 'Calculating'
             }
         },
 
@@ -80,6 +82,8 @@
             },
 
             updateTimeRemaining() {
+				var minutes, seconds
+
 				this.secondsRemaining = 0
 
 				this.unfinishedFiles().forEach((file) => {
@@ -91,6 +95,11 @@
 
 					this.secondsRemaining += file.secondsRemaining
 				})
+
+                minutes  = Math.floor(this.secondsRemaining / 60)
+                seconds = this.secondsRemaining - minutes * 60
+
+                this.timeRemaining = pad.left('00', minutes) + ':' + pad.left('00', seconds)
             }
         }
 	}
