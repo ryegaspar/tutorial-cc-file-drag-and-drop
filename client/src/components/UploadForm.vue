@@ -83,6 +83,8 @@
 				form.append('file', fileObject.file)
 				form.append('id', fileObject.id)
 
+                eventHub.$emit('init')
+
 				axios.post(`http://cc-multiple-file-drag.test/upload.php`, form, {
 					headers: {
 						'Content-Type': 'multipart/form-data'

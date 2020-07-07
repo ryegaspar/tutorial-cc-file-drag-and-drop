@@ -15,7 +15,8 @@
 </template>
 
 <script>
-	import File from "./File";
+	import File from "./File"
+	import timeremaining from "../helpers/timeremaining"
 
 	export default {
 		props: [
@@ -28,13 +29,22 @@
 
         data() {
 			return {
-			    overallProgress: 0
+			    overallProgress: 0,
+                interval: null
             }
         },
 
         mounted() {
 			eventHub.$on('progress', (fileObject, e) => {
 				this.updateOverallProgress()
+            })
+
+            eventHub.$on('init', () => {
+            	if (!this.interval) {
+            		this.interval = setInterval(() => {
+            			this.updateTimeRemaining()
+                    }, 1000)
+                }
             })
         },
 
@@ -52,6 +62,7 @@
 
                 return files
             },
+
 			updateOverallProgress() {
                 var unfinishedFiles = this.unfinishedFiles(), totalProgress = 0
 
@@ -60,6 +71,16 @@
                 })
 
                 this.overallProgress = parseInt(totalProgress / unfinishedFiles.length || 0)
+            },
+
+            updateTimeRemaining() {
+				this.unfinishedFiles().forEach((file) => {
+					file.secondsRemaining = timeremaining.calculate(
+						file.totalBytes,
+                        file.loadedBytes,
+                        file.timeStarted
+                    )
+				})
             }
         }
 	}
